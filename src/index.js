@@ -1,40 +1,46 @@
-//Module dependencies
+//IMPORTACIONES DE MODULOS
+const mongoose = require('mongoose');
 const express = require('express');
-const logger = require('morgan');
+const morgan = require('morgan');
+const bodyParser = require('body-parser');
+const cors = require('cors')
 
-//config
+//VARIABLES DE ENTORNO
+require('dotenv').config()
+
+//IMPORTACION DE RUTAS
+const USER = require('./router/user');
+const CALIFICACION = require('./router/calificacion');
+const PUBLICACIONES = require('./router/post')
+
+
+//VARIABLES
 const app = express();
-var port = normalizePort(process.env.PORT || '3000');
-app.set('port', port);
+const log = console.log;
+const PORT = process.env.PORT || 8080;
 
-//middleware
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+//CONFIGURACION DE BASE DE DATOS MONGO DB
+mongoose.connect(process.env.DBMONGO,
+   { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: false,})
+   .then(console.log('db conectado'))
+   .catch(err => console.log(err));
 
-//routes
 
-//starter
-app.listen(app.get('port'), () => {
-    console.log(`Server started on port ${app.get('port')}`);
+//CONFIGURACION SERVER O MIDDLEWARE
+app.use(cors());
+app.use(morgan('dev'));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+
+
+//RUTAS O REST API
+app.use('/', USER);
+app.use('/calificacion', CALIFICACION);
+app.use('/post', PUBLICACIONES);
+
+
+
+//PUERTO DEL SERVIDOR
+app.listen(PORT, () => {
+  log('Servidor en el puerto: ' + PORT);
 });
-
-/**
- * Normalize a port into a number, string, or false.
- */
-
-function normalizePort(val) {
-    var port = parseInt(val, 10);
-  
-    if (isNaN(port)) {
-      // named pipe
-      return val;
-    }
-  
-    if (port >= 0) {
-      // port number
-      return port;
-    }
-  
-    return false;
-  }
